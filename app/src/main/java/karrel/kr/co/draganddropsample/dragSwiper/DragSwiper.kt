@@ -45,6 +45,7 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
      * form을 down한 좌표X
      */
     private var locateX: Int = 0
+    private var locateY: Int = 0
 
     private var isDragging = false
 
@@ -64,6 +65,9 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
      * 우측으로 SWIPE됐을때의 X값이다.
      */
     private var swipeRightX: Int = 0
+
+    private var swipeTopY: Int = 0
+    private var swipeBottomY: Int = 0
 
     init {
         setupEvent()
@@ -96,6 +100,17 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
                 swipeLeftX = 0
                 swipeRightX = x.toInt()
             }
+            GRAVITY_TOP -> {
+                y = -(height - headerSize).toFloat()
+                swipeTopY = y.toInt()
+                swipeBottomY = 0
+            }
+            GRAVITY_BOTTOM -> {
+                y = (height - headerSize).toFloat()
+                swipeTopY = 0
+                swipeBottomY = y.toInt()
+            }
+
         }
     }
 
@@ -113,6 +128,7 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
             if (event.action == MotionEvent.ACTION_DOWN) {
                 isDragging = true
                 locateX = event.x.toInt()
+                locateY = event.y.toInt()
                 isPressed = true
             } else if (event.action == MotionEvent.ACTION_UP) {
                 if (isDragging) {
@@ -151,7 +167,12 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
 
             override fun onScroll(e1: MotionEvent, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
                 setSwipeStatus(SwiperStatus.DRAG)
-                setX(e2.rawX, locateX)
+
+                if (gravity == GRAVITY_LEFT && gravity == GRAVITY_RIGHT) {
+                    setX(e2.rawX, locateX)
+                } else {
+                    setY(e2.rawY, locateY)
+                }
 
                 return true
             }
@@ -163,28 +184,47 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
             override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
 
 
-                if (e1.rawX - e2.rawX > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
-                    swipeLeft(getDuration(e1, e2, velocityX.toInt(), velocityY.toInt()).toLong())
-                    return true
-                } else if (e2.rawX - e1.rawX > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
-                    swipeRight(getDuration(e1, e2, velocityX.toInt(), velocityY.toInt()).toLong())
-                    return true
+                if (gravity == GRAVITY_LEFT && gravity == GRAVITY_RIGHT) {
+                    if (e1.rawX - e2.rawX > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
+                        swipeLeft(getDurationX(e1, e2, velocityX.toInt(), velocityY.toInt()).toLong())
+                        return true
+                    } else if (e2.rawX - e1.rawX > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
+                        swipeRight(getDurationX(e1, e2, velocityX.toInt(), velocityY.toInt()).toLong())
+                        return true
+                    }
+                } else {
+                    if (e1.rawY - e2.rawY > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+                        swipeTop(getDurationY(e1, e2, velocityX.toInt(), velocityY.toInt()).toLong())
+                        return true
+                    } else if (e2.rawY - e1.rawY > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+                        swipeBottom(getDurationY(e1, e2, velocityX.toInt(), velocityY.toInt()).toLong())
+                        return true
+                    }
                 }
 
                 return false
             }
 
-            private fun getDuration(e1: MotionEvent, e2: MotionEvent, velocityX: Int, velocityY: Int): Int {
+            private fun getDurationX(e1: MotionEvent, e2: MotionEvent, velocityX: Int, velocityY: Int): Int {
                 val dx = (e1.rawX - e2.rawX).toInt()
                 val dy = 0
+                return computeSettleDuration(dx, dy, velocityX, velocityY)
+            }
+
+            private fun getDurationY(e1: MotionEvent, e2: MotionEvent, velocityX: Int, velocityY: Int): Int {
+                val dx = 0
+                val dy = (e1.rawY - e2.rawY).toInt()
                 return computeSettleDuration(dx, dy, velocityX, velocityY)
             }
         })
     }
 
     private fun setX(rawX: Float, locateX: Int) {
-        var x2 = rawX - locateX
-        x = x2
+        x = rawX - locateX
+    }
+
+    private fun setY(rawY: Float, locateY: Int) {
+        y = rawY - locateY
     }
 
     private fun computeSettleDuration(dx: Int, dy: Int, xvel: Int, yvel: Int): Int {
@@ -259,12 +299,30 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
     private fun swipeToggle() {
         println("swipeToggle()")
 
-        if (swipeLeftX == x.toInt()) {
-            swipeRight()
-        } else if (swipeRightX == x.toInt()) {
-            swipeLeft()
-        }
 
+        if (gravity == GRAVITY_LEFT && gravity == GRAVITY_RIGHT) {
+            if (swipeLeftX == x.toInt()) {
+                swipeRight()
+            } else if (swipeRightX == x.toInt()) {
+                swipeLeft()
+            }
+        } else {
+            if (swipeTopY == y.toInt()) {
+                swipeBottom()
+            } else if (swipeBottomY == y.toInt()) {
+                swipeTop()
+            }
+        }
+    }
+
+    private fun swipeTop(duration: Long = BASE_SETTLE_DURATION) {
+        println("swipeLeft($duration)")
+        animate().translationY(swipeTopY.toFloat()).duration = duration
+    }
+
+    private fun swipeBottom(duration: Long = BASE_SETTLE_DURATION) {
+        println("swipeLeft($duration)")
+        animate().translationY(swipeBottomY.toFloat()).duration = duration
     }
 
     /**
@@ -272,7 +330,7 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
      */
     private fun swipeLeft(duration: Long = BASE_SETTLE_DURATION) {
         println("swipeLeft($duration)")
-        animate().translationX(swipeLeftX.toFloat()).duration = BASE_SETTLE_DURATION;
+        animate().translationX(swipeLeftX.toFloat()).duration = duration
     }
 
     /**
@@ -280,7 +338,7 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
      */
     private fun swipeRight(duration: Long = BASE_SETTLE_DURATION) {
         println("swipeRight($duration)")
-        animate().translationX(swipeRightX.toFloat()).duration = BASE_SETTLE_DURATION;
+        animate().translationX(swipeRightX.toFloat()).duration = duration
     }
 
     /**
