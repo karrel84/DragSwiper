@@ -72,9 +72,9 @@ public class MenualmodeSwiper extends DragSwiperOlg implements View.OnTouchListe
      */
     private void setupX() {
         screenWidth = Util.getScreenWidth(mRootView.getContext());
-        handleSize = (int) Util.convertDpToPixel(28, mRootView.getContext());
+        handleSize = (int) Util.dpToPixel(28, mRootView.getContext());
 
-        swipeLeftX = (int) Util.convertDpToPixel(12, mRootView.getContext());
+        swipeLeftX = (int) Util.dpToPixel(12, mRootView.getContext());
         swipeRightX = screenWidth - handleSize;
 
         System.out.println("swipeRightX : " + swipeRightX);

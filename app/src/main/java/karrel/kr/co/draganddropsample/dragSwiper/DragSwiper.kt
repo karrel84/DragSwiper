@@ -5,10 +5,13 @@ import android.support.constraint.ConstraintLayout
 import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.MotionEvent
-import android.view.View
 import android.view.View.OnTouchListener
+import karrel.kr.co.draganddropsample.R
 import karrel.kr.co.draganddropsample.drag.SwiperStatus
 import karrel.kr.co.draganddropsample.util.Util
+import android.R.attr.strokeWidth
+
+
 
 /**
  * Created by Rell on 2019. 2. 18..
@@ -16,7 +19,7 @@ import karrel.kr.co.draganddropsample.util.Util
 
 //Context context, AttributeSet attrs, int defStyleAttr
 class DragSwiper @JvmOverloads
-constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, attrs), View.OnTouchListener {
+constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, attrs) {
 
 
     // 손잡이 사이즈
@@ -52,11 +55,8 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
     private val BASE_SETTLE_DURATION = 200L // ms
     private val MAX_SETTLE_DURATION = 300L // ms
 
-    private var targetView: View = this
-    private var eventView: View = parent as View
-
     private lateinit var detector: GestureDetector
-    private lateinit var swipeStatus: SwiperStatus
+    private var swipeStatus: SwiperStatus = SwiperStatus()
 
     /**
      * 좌측으로 SWIPE됐을때의 X값이다.
@@ -69,24 +69,38 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
     private var swipeRightX: Int = 0
 
     init {
-//        headerSize = Util.convertDpToPixel(40f, context).toInt()
-//        setupEvent()
+        setupEvent()
+
+        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.DragSwiper)
+        gravity = typedArray.getInteger(R.styleable.DragSwiper_dsGravity, GRAVITY_LEFT)
+
+        headerSize = typedArray.getDimensionPixelSize(R.styleable.DragSwiper_dsHandleSize, 0)
+
+        typedArray.recycle()
     }
 
-    override fun onTouch(view: View, event: MotionEvent): Boolean {
-        if (event.action == MotionEvent.ACTION_UP) {
-            if (isDragging) {
-                swipe()
-                detector.onTouchEvent(event)
-            }
-            isDragging = false
-            targetView.isPressed = false
-        }
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        super.onLayout(changed, left, top, right, bottom)
 
-        if (isDragging) {
-            detector.onTouchEvent(event)
+        println("width : $width")
+
+        initLayoutLocation()
+
+    }
+
+    private fun initLayoutLocation() {
+        when (gravity) {
+            GRAVITY_LEFT -> {
+                x = (headerSize).toFloat() - width
+                swipeLeftX = x.toInt()
+                swipeRightX = 0
+            }
+            GRAVITY_RIGHT -> {
+                x = (width - headerSize).toFloat()
+                swipeLeftX = 0
+                swipeRightX = x.toInt()
+            }
         }
-        return isDragging
     }
 
     /**
@@ -97,16 +111,29 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
         mMinVelocity = MIN_FLING_VELOCITY * density
         mMaxVelocity = MAX_FLING_VELOCITY * density
 
-        val l = OnTouchListener { v, event ->
+        val l = OnTouchListener { _, event ->
+
+            println("OnTouchListener.event : ${event.action}")
             if (event.action == MotionEvent.ACTION_DOWN) {
                 isDragging = true
                 locateX = event.x.toInt()
-                targetView.isPressed = true
+                isPressed = true
+            } else if (event.action == MotionEvent.ACTION_UP) {
+                if (isDragging) {
+                    swipe()
+                    detector.onTouchEvent(event)
+                }
+                isDragging = false
+                isPressed = false
             }
-            false
+
+            if (isDragging) {
+                detector.onTouchEvent(event)
+            }
+            return@OnTouchListener isDragging
         }
 
-        targetView.setOnTouchListener(l)
+        setOnTouchListener(l)
 
         detector = GestureDetector(context, object : GestureDetector.OnGestureListener {
 
@@ -128,6 +155,7 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
 
             override fun onScroll(e1: MotionEvent, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
                 setSwipeStatus(SwiperStatus.DRAG)
+                setX(e2.rawX, locateX)
 
                 return true
             }
@@ -158,6 +186,11 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
         })
     }
 
+    private fun setX(rawX: Float, locateX: Int) {
+        var x2 = rawX - locateX
+        x = x2
+    }
+
     private fun computeSettleDuration(dx: Int, dy: Int, xvel: Int, yvel: Int): Int {
         var xvel = xvel
         var yvel = yvel
@@ -179,7 +212,7 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
         else
             absDy.toFloat() / addedDistance
 
-        val xduration = computeAxisDuration(dx, xvel, eventView.width)
+        val xduration = computeAxisDuration(dx, xvel, width)
         val yduration = computeAxisDuration(dy, yvel, 0)
 
         return (xduration * xweight + yduration * yweight).toInt()
@@ -197,7 +230,6 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
             return 0
         }
 
-        val width = eventView.width
         val halfWidth = width / 2
         val distanceRatio = Math.min(1f, Math.abs(delta).toFloat() / width)
         val distance = halfWidth + halfWidth * distanceInfluenceForSnapDuration(distanceRatio)
@@ -230,6 +262,13 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
 
     private fun swipeToggle() {
         println("swipeToggle()")
+
+        if (swipeLeftX == x.toInt()) {
+            swipeRight()
+        } else if (swipeRightX == x.toInt()) {
+            swipeLeft()
+        }
+
     }
 
     /**
@@ -237,6 +276,7 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
      */
     private fun swipeLeft(duration: Long = BASE_SETTLE_DURATION) {
         println("swipeLeft($duration)")
+        animate().translationX(swipeLeftX.toFloat()).duration = BASE_SETTLE_DURATION;
     }
 
     /**
@@ -244,7 +284,7 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
      */
     private fun swipeRight(duration: Long = BASE_SETTLE_DURATION) {
         println("swipeRight($duration)")
-//        targetView.animate().translationX(swipeRightX).setDuration(BASE_SETTLE_DURATION);
+        animate().translationX(swipeRightX.toFloat()).duration = BASE_SETTLE_DURATION;
     }
 
     /**
@@ -252,9 +292,9 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
      */
     private fun swipe() {
         // 현재 뷰의 왼쪽 X값을 구한다.
-        val curLeftX = targetView.getX()
+        val curLeftX = x
         // 오른쪽 X가 스크린의 1/2보다 크면 오른쪽으로 이동 아니면 왼쪽으로 이동
-        if (curLeftX < eventView.width / 2) {
+        if (curLeftX < width / 2) {
             swipeLeft()
         } else {
             swipeRight()

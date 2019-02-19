@@ -23,7 +23,7 @@ public class Util {
      * @return A float binary to represent px equivalent to dp depending on
      * device density
      */
-    public static float convertDpToPixel(float dp, Context context) {
+    public static float dpToPixel(float dp, Context context) {
         Resources resources = context.getResources();
         DisplayMetrics metrics = resources.getDisplayMetrics();
         float px = dp * (metrics.densityDpi / 160f);
