@@ -8,9 +8,6 @@ import android.view.MotionEvent
 import android.view.View.OnTouchListener
 import karrel.kr.co.draganddropsample.R
 import karrel.kr.co.draganddropsample.drag.SwiperStatus
-import karrel.kr.co.draganddropsample.util.Util
-import android.R.attr.strokeWidth
-
 
 
 /**
@@ -73,7 +70,6 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
 
         val typedArray = context.obtainStyledAttributes(attrs, R.styleable.DragSwiper)
         gravity = typedArray.getInteger(R.styleable.DragSwiper_dsGravity, GRAVITY_LEFT)
-
         headerSize = typedArray.getDimensionPixelSize(R.styleable.DragSwiper_dsHandleSize, 0)
 
         typedArray.recycle()
