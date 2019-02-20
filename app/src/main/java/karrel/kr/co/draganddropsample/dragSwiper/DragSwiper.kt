@@ -334,25 +334,31 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
     }
 
     private fun swipeTop(duration: Long = BASE_SETTLE_DURATION) {
-        animate().translationY(swipeTopY.toFloat()).duration = duration
+        animate().y(swipeTopY.toFloat()).duration= duration
+//        animate().translationY(swipeTopY.toFloat()).duration = duration
     }
 
     private fun swipeBottom(duration: Long = BASE_SETTLE_DURATION) {
-        animate().translationY(swipeBottomY.toFloat()).duration = duration
+        animate().y(swipeBottomY.toFloat()).duration= duration
+//        animate().translationY(swipeBottomY.toFloat()).duration = duration
     }
 
     /**
      * 사이드 메뉴를 좌측으로 Swipe시킨다
      */
     private fun swipeLeft(duration: Long = BASE_SETTLE_DURATION) {
-        animate().translationX(swipeLeftX.toFloat()).duration = duration
+        animate().x(swipeLeftX.toFloat()).duration= duration
+//        x = swipeLeftX.toFloat()
+//        animate().translationX(swipeLeftX.toFloat()).duration = duration
     }
 
     /**
      * 사이드 메뉴를 우측으로 Swipe시킨다
      */
     private fun swipeRight(duration: Long = BASE_SETTLE_DURATION) {
-        animate().translationX(swipeRightX.toFloat()).duration = duration
+        animate().x(swipeRightX.toFloat()).duration= duration
+//        x = swipeRightX.toFloat()
+//        animate().translationX(swipeRightX.toFloat()).duration = duration
     }
 
     /**
