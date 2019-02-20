@@ -34,8 +34,8 @@ DragSwiper는 ConstraintLayout을 상속받았기때문에 xml상에서 내부�
 
 # 스크린샷
 ![image1](./screenshot/align_left.gif)
-![image2](./screenshot/align_top.gif)
-![image3](./screenshot/align_right.gif)
 ![image4](./screenshot/align_bottom.gif)
+![image3](./screenshot/align_right.gif)
+
 
 
