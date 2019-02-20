@@ -35,9 +35,9 @@ handleSize를 설정해서 손잡이의 크기를 지정할 수 있습니다.</b
 DragSwiper는 ConstraintLayout을 상속받았기때문에 xml상에서 내부에 다른뷰들을 적용할 수 있습니다.</br>
 
 # 스크린샷
-![image1](./screenshot/algin_left.gif)
-![image2](./screenshot/algin_top.gif)
-![image3](./screenshot/algin_right.gif)
-![image4](./screenshot/algin_bottom.gif)
+![image1](./screenshot/align_left.gif)
+![image2](./screenshot/align_top.gif)
+![image3](./screenshot/align_right.gif)
+![image4](./screenshot/align_bottom.gif)
 
 
