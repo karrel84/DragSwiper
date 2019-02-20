@@ -85,12 +85,9 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
 
-        println("width : $width")
-
-        initLayoutLocation()
-
         parentView = parent as View
 
+        initLayoutLocation()
         setupEvent()
 
     }
@@ -98,24 +95,24 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
     private fun initLayoutLocation() {
         when (gravity) {
             GRAVITY_LEFT -> {
-                x = (headerSize).toFloat() - width
-                swipeLeftX = x.toInt()
+                swipeLeftX = headerSize - width
                 swipeRightX = 0
+                x = swipeLeftX.toFloat()
             }
             GRAVITY_RIGHT -> {
-                x = (width - headerSize).toFloat()
-                swipeLeftX = 0
-                swipeRightX = x.toInt()
+                swipeLeftX = parentView.width - width
+                swipeRightX = parentView.width - headerSize
+                x = swipeRightX.toFloat()
             }
             GRAVITY_TOP -> {
-                y = -(height - headerSize).toFloat()
-                swipeTopY = y.toInt()
+                swipeTopY = headerSize - height
                 swipeBottomY = 0
+                y = swipeTopY.toFloat()
             }
             GRAVITY_BOTTOM -> {
-                y = (height - headerSize).toFloat()
-                swipeTopY = 0
-                swipeBottomY = y.toInt()
+                swipeTopY = parentView.height - height
+                swipeBottomY = parentView.height - headerSize
+                y = swipeBottomY.toFloat()
             }
 
         }
@@ -214,7 +211,6 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
 
     private fun setupParentTouchEvent() {
         parentView.setOnTouchListener { _, event ->
-            println("OnTouchListener.event : ${event.action}")
             if (event.action == MotionEvent.ACTION_UP) {
                 if (isDragging) {
                     swipe()
@@ -337,10 +333,48 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
         swipeStatus.status = status
     }
 
+    private fun swipeTop(duration: Long = BASE_SETTLE_DURATION) {
+        animate().translationY(swipeTopY.toFloat()).duration = duration
+    }
+
+    private fun swipeBottom(duration: Long = BASE_SETTLE_DURATION) {
+        animate().translationY(swipeBottomY.toFloat()).duration = duration
+    }
+
+    /**
+     * 사이드 메뉴를 좌측으로 Swipe시킨다
+     */
+    private fun swipeLeft(duration: Long = BASE_SETTLE_DURATION) {
+        animate().translationX(swipeLeftX.toFloat()).duration = duration
+    }
+
+    /**
+     * 사이드 메뉴를 우측으로 Swipe시킨다
+     */
+    private fun swipeRight(duration: Long = BASE_SETTLE_DURATION) {
+        animate().translationX(swipeRightX.toFloat()).duration = duration
+    }
+
+    /**
+     * 현재 위치에서 어느 방향으로 이동할지 결정한다.
+     */
+    private fun swipe() {
+        if (gravity == GRAVITY_LEFT || gravity == GRAVITY_RIGHT) {
+            if (x < swipeLeftX + (width / 2)) {
+                swipeLeft()
+            } else {
+                swipeRight()
+            }
+        } else if (gravity == GRAVITY_TOP || gravity == GRAVITY_BOTTOM) {
+            if (y < swipeTopY + (height / 2)) {
+                swipeTop()
+            } else {
+                swipeBottom()
+            }
+        }
+    }
+
     private fun swipeToggle() {
-        println("swipeToggle()")
-
-
         if (gravity == GRAVITY_LEFT || gravity == GRAVITY_RIGHT) {
             if (swipeLeftX == x.toInt()) {
                 swipeRight()
@@ -355,52 +389,5 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
             }
         }
     }
-
-    private fun swipeTop(duration: Long = BASE_SETTLE_DURATION) {
-        println("swipeLeft($duration)")
-        animate().translationY(swipeTopY.toFloat()).duration = duration
-    }
-
-    private fun swipeBottom(duration: Long = BASE_SETTLE_DURATION) {
-        println("swipeLeft($duration)")
-        animate().translationY(swipeBottomY.toFloat()).duration = duration
-    }
-
-    /**
-     * 사이드 메뉴를 좌측으로 Swipe시킨다
-     */
-    private fun swipeLeft(duration: Long = BASE_SETTLE_DURATION) {
-        println("swipeLeft($duration)")
-        animate().translationX(swipeLeftX.toFloat()).duration = duration
-    }
-
-    /**
-     * 사이드 메뉴를 우측으로 Swipe시킨다
-     */
-    private fun swipeRight(duration: Long = BASE_SETTLE_DURATION) {
-        println("swipeRight($duration)")
-        animate().translationX(swipeRightX.toFloat()).duration = duration
-    }
-
-    /**
-     * 현재 위치에서 어느 방향으로 이동할지 결정한다.
-     */
-    private fun swipe() {
-        if (gravity == GRAVITY_LEFT || gravity == GRAVITY_RIGHT) {
-            if (x < width / 2) {
-                swipeLeft()
-            } else {
-                swipeRight()
-            }
-        } else {
-            if (y < height / 2) {
-                swipeTop()
-            } else {
-                swipeBottom()
-            }
-        }
-
-    }
-
 
 }
