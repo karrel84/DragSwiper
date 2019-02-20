@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <karrel.kr.co.draganddropsample.dragSwiper.DragSwiper
+    <karrel.kr.co.dragswiper.DragSwiper
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@color/colorAccent"

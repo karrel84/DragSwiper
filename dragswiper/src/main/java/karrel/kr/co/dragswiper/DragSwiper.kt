@@ -1,4 +1,4 @@
-package karrel.kr.co.draganddropsample.dragSwiper
+package karrel.kr.co.dragswiper
 
 import android.content.Context
 import android.support.constraint.ConstraintLayout
@@ -6,8 +6,6 @@ import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
-import karrel.kr.co.draganddropsample.R
-import karrel.kr.co.draganddropsample.drag.SwiperStatus
 
 
 /**
@@ -239,7 +237,7 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
     }
 
     private fun setX(parentX: Float, locateX: Int) {
-        var valueX = parentX - locateX
+        val valueX = parentX - locateX
         if (gravity == GRAVITY_LEFT) {
             if (valueX <= 0) {
                 x = valueX
@@ -252,7 +250,7 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
     }
 
     private fun setY(parentY: Float, locateY: Int) {
-        var valueY = parentY - locateY
+        val valueY = parentY - locateY
         if (gravity == GRAVITY_TOP) {
             if (valueY <= 0) {
                 y = valueY
@@ -334,31 +332,25 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
     }
 
     private fun swipeTop(duration: Long = BASE_SETTLE_DURATION) {
-        animate().y(swipeTopY.toFloat()).duration= duration
-//        animate().translationY(swipeTopY.toFloat()).duration = duration
+        animate().y(swipeTopY.toFloat()).duration = duration
     }
 
     private fun swipeBottom(duration: Long = BASE_SETTLE_DURATION) {
-        animate().y(swipeBottomY.toFloat()).duration= duration
-//        animate().translationY(swipeBottomY.toFloat()).duration = duration
+        animate().y(swipeBottomY.toFloat()).duration = duration
     }
 
     /**
      * 사이드 메뉴를 좌측으로 Swipe시킨다
      */
     private fun swipeLeft(duration: Long = BASE_SETTLE_DURATION) {
-        animate().x(swipeLeftX.toFloat()).duration= duration
-//        x = swipeLeftX.toFloat()
-//        animate().translationX(swipeLeftX.toFloat()).duration = duration
+        animate().x(swipeLeftX.toFloat()).duration = duration
     }
 
     /**
      * 사이드 메뉴를 우측으로 Swipe시킨다
      */
     private fun swipeRight(duration: Long = BASE_SETTLE_DURATION) {
-        animate().x(swipeRightX.toFloat()).duration= duration
-//        x = swipeRightX.toFloat()
-//        animate().translationX(swipeRightX.toFloat()).duration = duration
+        animate().x(swipeRightX.toFloat()).duration = duration
     }
 
     /**

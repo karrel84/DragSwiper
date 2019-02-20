@@ -1,4 +1,4 @@
-package karrel.kr.co.draganddropsample.drag;
+package karrel.kr.co.dragswiper;
 
 /**
  * Created by 이주영 on 2017-01-19.
