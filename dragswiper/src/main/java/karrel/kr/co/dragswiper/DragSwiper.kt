@@ -20,11 +20,11 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
     // 손잡이 사이즈
     private var headerSize: Int = 0
     // 이 레이아웃의 정렬방향 LEFT, TOP, RIGHT, BOTTOM
-    private val GRAVITY_LEFT = 0
-    private val GRAVITY_TOP = 1
-    private val GRAVITY_RIGHT = 2
-    private val GRAVITY_BOTTOM = 3
-    private var gravity: Int = GRAVITY_RIGHT
+    private val ALIGN_LEFT = 0
+    private val ALIGN_TOP = 1
+    private val ALIGN_RIGHT = 2
+    private val ALIGN_BOTTOM = 3
+    private var align: Int = ALIGN_RIGHT
 
     private val MIN_FLING_VELOCITY = 400 // dips per second
     private val MAX_FLING_VELOCITY = 8000 // dips per second
@@ -73,8 +73,8 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
     init {
 
         val typedArray = context.obtainStyledAttributes(attrs, R.styleable.DragSwiper)
-        gravity = typedArray.getInteger(R.styleable.DragSwiper_dsGravity, GRAVITY_LEFT)
-        headerSize = typedArray.getDimensionPixelSize(R.styleable.DragSwiper_dsHandleSize, 0)
+        align = typedArray.getInteger(R.styleable.DragSwiper_align, ALIGN_LEFT)
+        headerSize = typedArray.getDimensionPixelSize(R.styleable.DragSwiper_handleSize, 0)
 
         typedArray.recycle()
 
@@ -91,23 +91,23 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
     }
 
     private fun initLayoutLocation() {
-        when (gravity) {
-            GRAVITY_LEFT -> {
+        when (align) {
+            ALIGN_LEFT -> {
                 swipeLeftX = headerSize - width
                 swipeRightX = 0
                 x = swipeLeftX.toFloat()
             }
-            GRAVITY_RIGHT -> {
+            ALIGN_RIGHT -> {
                 swipeLeftX = parentView.width - width
                 swipeRightX = parentView.width - headerSize
                 x = swipeRightX.toFloat()
             }
-            GRAVITY_TOP -> {
+            ALIGN_TOP -> {
                 swipeTopY = headerSize - height
                 swipeBottomY = 0
                 y = swipeTopY.toFloat()
             }
-            GRAVITY_BOTTOM -> {
+            ALIGN_BOTTOM -> {
                 swipeTopY = parentView.height - height
                 swipeBottomY = parentView.height - headerSize
                 y = swipeBottomY.toFloat()
@@ -156,7 +156,7 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
             override fun onScroll(e1: MotionEvent, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
                 setSwipeStatus(SwiperStatus.DRAG)
 
-                if (gravity == GRAVITY_LEFT || gravity == GRAVITY_RIGHT) {
+                if (align == ALIGN_LEFT || align == ALIGN_RIGHT) {
                     setX(e2.x, locateX)
                 } else {
                     setY(e2.y, locateY)
@@ -172,7 +172,7 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
             override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
 
 
-                if (gravity == GRAVITY_LEFT || gravity == GRAVITY_RIGHT) {
+                if (align == ALIGN_LEFT || align == ALIGN_RIGHT) {
                     if (e1.x - e2.x > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
                         swipeLeft(getDurationX(e1, e2, velocityX.toInt(), velocityY.toInt()).toLong())
                         return true
@@ -238,11 +238,11 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
 
     private fun setX(parentX: Float, locateX: Int) {
         val valueX = parentX - locateX
-        if (gravity == GRAVITY_LEFT) {
+        if (align == ALIGN_LEFT) {
             if (valueX <= 0) {
                 x = valueX
             }
-        } else if (gravity == GRAVITY_RIGHT) {
+        } else if (align == ALIGN_RIGHT) {
             if (valueX >= parentView.width - width) {
                 x = valueX
             }
@@ -251,11 +251,11 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
 
     private fun setY(parentY: Float, locateY: Int) {
         val valueY = parentY - locateY
-        if (gravity == GRAVITY_TOP) {
+        if (align == ALIGN_TOP) {
             if (valueY <= 0) {
                 y = valueY
             }
-        } else if (gravity == GRAVITY_BOTTOM) {
+        } else if (align == ALIGN_BOTTOM) {
             if (valueY >= parentView.height - height) {
                 y = valueY
             }
@@ -357,13 +357,13 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
      * 현재 위치에서 어느 방향으로 이동할지 결정한다.
      */
     private fun swipe() {
-        if (gravity == GRAVITY_LEFT || gravity == GRAVITY_RIGHT) {
+        if (align == ALIGN_LEFT || align == ALIGN_RIGHT) {
             if (x < swipeLeftX + (width / 2)) {
                 swipeLeft()
             } else {
                 swipeRight()
             }
-        } else if (gravity == GRAVITY_TOP || gravity == GRAVITY_BOTTOM) {
+        } else if (align == ALIGN_TOP || align == ALIGN_BOTTOM) {
             if (y < swipeTopY + (height / 2)) {
                 swipeTop()
             } else {
@@ -373,7 +373,7 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
     }
 
     private fun swipeToggle() {
-        if (gravity == GRAVITY_LEFT || gravity == GRAVITY_RIGHT) {
+        if (align == ALIGN_LEFT || align == ALIGN_RIGHT) {
             if (swipeLeftX == x.toInt()) {
                 swipeRight()
             } else if (swipeRightX == x.toInt()) {

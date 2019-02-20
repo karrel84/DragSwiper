@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="DragSwiper">
-        <attr name="dsGravity">
+        <attr name="align">
             <flag name="left" value="0" />
             <flag name="top" value="1" />
             <flag name="right" value="2" />
             <flag name="bottom" value="3" />
 
         </attr>
-        <attr name="dsHandleSize" format="dimension" />
+        <attr name="handleSize" format="dimension" />
 
     </declare-styleable>
 </resources>

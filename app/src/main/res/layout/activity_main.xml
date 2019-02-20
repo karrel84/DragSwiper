@@ -7,16 +7,39 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <karrel.kr.co.dragswiper.DragSwiper
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="@color/colorAccent"
-        app:dsGravity="right"
-        app:dsHandleSize="40dp"
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ALGIN BOTTOM"
+        android:textColor="@color/colorAccent"
+        android:textSize="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+
+    <karrel.kr.co.dragswiper.DragSwiper
+        android:layout_width="0dp"
+        android:layout_height="320dp"
+        android:background="@color/colorAccent"
+        app:align="bottom"
+        app:handleSize="40dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_margin="20dp"
+            android:src="@drawable/summer"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </karrel.kr.co.dragswiper.DragSwiper>
 
 </android.support.constraint.ConstraintLayout>
