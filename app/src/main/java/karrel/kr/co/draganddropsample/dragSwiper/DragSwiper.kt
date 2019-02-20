@@ -215,16 +215,12 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
     private fun setupParentTouchEvent() {
         parentView.setOnTouchListener { _, event ->
             println("OnTouchListener.event : ${event.action}")
-            if (event.action == MotionEvent.ACTION_DOWN) {
-                isDragging = true
-                targetView.isPressed = true
-            } else if (event.action == MotionEvent.ACTION_UP) {
+            if (event.action == MotionEvent.ACTION_UP) {
                 if (isDragging) {
                     swipe()
                     detector.onTouchEvent(event)
                 }
                 isDragging = false
-                targetView.isPressed = false
             }
 
             if (isDragging) {
@@ -247,11 +243,29 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
     }
 
     private fun setX(parentX: Float, locateX: Int) {
-        x = parentX - locateX
+        var valueX = parentX - locateX
+        if (gravity == GRAVITY_LEFT) {
+            if (valueX <= 0) {
+                x = valueX
+            }
+        } else if (gravity == GRAVITY_RIGHT) {
+            if (valueX >= parentView.width - width) {
+                x = valueX
+            }
+        }
     }
 
     private fun setY(parentY: Float, locateY: Int) {
-        y = parentY - locateY
+        var valueY = parentY - locateY
+        if (gravity == GRAVITY_TOP) {
+            if (valueY <= 0) {
+                y = valueY
+            }
+        } else if (gravity == GRAVITY_BOTTOM) {
+            if (valueY >= parentView.height - height) {
+                y = valueY
+            }
+        }
     }
 
     private fun computeSettleDuration(dx: Int, dy: Int, xvel: Int, yvel: Int): Int {
