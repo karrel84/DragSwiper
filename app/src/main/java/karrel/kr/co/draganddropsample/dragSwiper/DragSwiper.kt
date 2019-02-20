@@ -5,7 +5,7 @@ import android.support.constraint.ConstraintLayout
 import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.MotionEvent
-import android.view.View.OnTouchListener
+import android.view.View
 import karrel.kr.co.draganddropsample.R
 import karrel.kr.co.draganddropsample.drag.SwiperStatus
 
@@ -69,14 +69,17 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
     private var swipeTopY: Int = 0
     private var swipeBottomY: Int = 0
 
+    private lateinit var parentView: View
+    private var targetView = this
+
     init {
-        setupEvent()
 
         val typedArray = context.obtainStyledAttributes(attrs, R.styleable.DragSwiper)
         gravity = typedArray.getInteger(R.styleable.DragSwiper_dsGravity, GRAVITY_LEFT)
         headerSize = typedArray.getDimensionPixelSize(R.styleable.DragSwiper_dsHandleSize, 0)
 
         typedArray.recycle()
+
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
@@ -85,6 +88,10 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
         println("width : $width")
 
         initLayoutLocation()
+
+        parentView = parent as View
+
+        setupEvent()
 
     }
 
@@ -122,31 +129,17 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
         mMinVelocity = MIN_FLING_VELOCITY * density
         mMaxVelocity = MAX_FLING_VELOCITY * density
 
-        val l = OnTouchListener { _, event ->
+        // this 뷰 이벤트
+        setupTargetViewTouchEvent()
 
-            println("OnTouchListener.event : ${event.action}")
-            if (event.action == MotionEvent.ACTION_DOWN) {
-                isDragging = true
-                locateX = event.x.toInt()
-                locateY = event.y.toInt()
-                isPressed = true
-            } else if (event.action == MotionEvent.ACTION_UP) {
-                if (isDragging) {
-                    swipe()
-                    detector.onTouchEvent(event)
-                }
-                isDragging = false
-                isPressed = false
-            }
+        // 부모뷰 이벤트
+        setupParentTouchEvent()
 
-            if (isDragging) {
-                detector.onTouchEvent(event)
-            }
-            return@OnTouchListener isDragging
-        }
+        // 제스쳐 디텍터
+        setupGestureDetector()
+    }
 
-        setOnTouchListener(l)
-
+    private fun setupGestureDetector() {
         detector = GestureDetector(context, object : GestureDetector.OnGestureListener {
 
             private val SWIPE_MIN_DISTANCE = 60
@@ -168,10 +161,10 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
             override fun onScroll(e1: MotionEvent, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
                 setSwipeStatus(SwiperStatus.DRAG)
 
-                if (gravity == GRAVITY_LEFT && gravity == GRAVITY_RIGHT) {
-                    setX(e2.rawX, locateX)
+                if (gravity == GRAVITY_LEFT || gravity == GRAVITY_RIGHT) {
+                    setX(e2.x, locateX)
                 } else {
-                    setY(e2.rawY, locateY)
+                    setY(e2.y, locateY)
                 }
 
                 return true
@@ -184,19 +177,19 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
             override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
 
 
-                if (gravity == GRAVITY_LEFT && gravity == GRAVITY_RIGHT) {
-                    if (e1.rawX - e2.rawX > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
+                if (gravity == GRAVITY_LEFT || gravity == GRAVITY_RIGHT) {
+                    if (e1.x - e2.x > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
                         swipeLeft(getDurationX(e1, e2, velocityX.toInt(), velocityY.toInt()).toLong())
                         return true
-                    } else if (e2.rawX - e1.rawX > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
+                    } else if (e2.x - e1.x > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
                         swipeRight(getDurationX(e1, e2, velocityX.toInt(), velocityY.toInt()).toLong())
                         return true
                     }
                 } else {
-                    if (e1.rawY - e2.rawY > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+                    if (e1.y - e2.y > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
                         swipeTop(getDurationY(e1, e2, velocityX.toInt(), velocityY.toInt()).toLong())
                         return true
-                    } else if (e2.rawY - e1.rawY > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+                    } else if (e2.y - e1.y > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
                         swipeBottom(getDurationY(e1, e2, velocityX.toInt(), velocityY.toInt()).toLong())
                         return true
                     }
@@ -206,25 +199,59 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
             }
 
             private fun getDurationX(e1: MotionEvent, e2: MotionEvent, velocityX: Int, velocityY: Int): Int {
-                val dx = (e1.rawX - e2.rawX).toInt()
+                val dx = (e1.x - e2.x).toInt()
                 val dy = 0
                 return computeSettleDuration(dx, dy, velocityX, velocityY)
             }
 
             private fun getDurationY(e1: MotionEvent, e2: MotionEvent, velocityX: Int, velocityY: Int): Int {
                 val dx = 0
-                val dy = (e1.rawY - e2.rawY).toInt()
+                val dy = (e1.y - e2.y).toInt()
                 return computeSettleDuration(dx, dy, velocityX, velocityY)
             }
         })
     }
 
-    private fun setX(rawX: Float, locateX: Int) {
-        x = rawX - locateX
+    private fun setupParentTouchEvent() {
+        parentView.setOnTouchListener { _, event ->
+            println("OnTouchListener.event : ${event.action}")
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                isDragging = true
+                targetView.isPressed = true
+            } else if (event.action == MotionEvent.ACTION_UP) {
+                if (isDragging) {
+                    swipe()
+                    detector.onTouchEvent(event)
+                }
+                isDragging = false
+                targetView.isPressed = false
+            }
+
+            if (isDragging) {
+                detector.onTouchEvent(event)
+            }
+            return@setOnTouchListener isDragging
+        }
     }
 
-    private fun setY(rawY: Float, locateY: Int) {
-        y = rawY - locateY
+    private fun setupTargetViewTouchEvent() {
+        setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                isDragging = true
+                locateX = event.x.toInt()
+                locateY = event.y.toInt()
+                targetView.isPressed = true
+            }
+            return@setOnTouchListener false
+        }
+    }
+
+    private fun setX(parentX: Float, locateX: Int) {
+        x = parentX - locateX
+    }
+
+    private fun setY(parentY: Float, locateY: Int) {
+        y = parentY - locateY
     }
 
     private fun computeSettleDuration(dx: Int, dy: Int, xvel: Int, yvel: Int): Int {
@@ -300,7 +327,7 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
         println("swipeToggle()")
 
 
-        if (gravity == GRAVITY_LEFT && gravity == GRAVITY_RIGHT) {
+        if (gravity == GRAVITY_LEFT || gravity == GRAVITY_RIGHT) {
             if (swipeLeftX == x.toInt()) {
                 swipeRight()
             } else if (swipeRightX == x.toInt()) {
@@ -345,14 +372,20 @@ constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, a
      * 현재 위치에서 어느 방향으로 이동할지 결정한다.
      */
     private fun swipe() {
-        // 현재 뷰의 왼쪽 X값을 구한다.
-        val curLeftX = x
-        // 오른쪽 X가 스크린의 1/2보다 크면 오른쪽으로 이동 아니면 왼쪽으로 이동
-        if (curLeftX < width / 2) {
-            swipeLeft()
+        if (gravity == GRAVITY_LEFT || gravity == GRAVITY_RIGHT) {
+            if (x < width / 2) {
+                swipeLeft()
+            } else {
+                swipeRight()
+            }
         } else {
-            swipeRight()
+            if (y < height / 2) {
+                swipeTop()
+            } else {
+                swipeBottom()
+            }
         }
+
     }
 
 
